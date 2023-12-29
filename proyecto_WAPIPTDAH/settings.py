@@ -55,6 +55,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django_session_timeout.middleware.SessionTimeoutMiddleware', # NUEVO MIDDLEWARE SESSION TIMEOUT
@@ -212,9 +213,12 @@ EMAIL_USE_SSL = False
 
 
 """ CONFIGURACIÓN PARA LOS CORS HEADERS DE ACCESO DEL FRONTEND """
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173",
-]
 
+CORS_ALLOW_ALL_ORIGINS = True
+
+CORS_ALLOWED_ORIGINS = [
+    "https://react-frontend-production-b574.up.railway.app",
+    # Agrega más dominios permitidos aquí si es necesario
+]
 # DOMINIO   
 #SITE_URL = "http://aprender-wapiptdah.com"

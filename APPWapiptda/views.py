@@ -1018,7 +1018,7 @@ def api_user_register(request):
         else:
             return JsonResponse({'error': 'Método no permitido'})
     except Exception as e:
-        return JsonResponse({'error': 'Error al crear el usuario'})
+        return JsonResponse({'error': ('Error al crear el usuario'+e)})
 
 # Método para guardar el registro de entidad usuario
 def crear_usuario_normal(ob1, ob2, ob3, ob4, ob5, ob6, ob7, ob8):

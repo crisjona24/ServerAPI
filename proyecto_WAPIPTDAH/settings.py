@@ -240,5 +240,10 @@ CORS_ALLOWED_ORIGINS = [
     # Agrega más dominios permitidos aquí si es necesario
 ]
 
+ALLOWED_HOSTS = [
+    # Otros hosts permitidos...
+    'serverapi-production-c8a1.up.railway.app',
+]
+
 # DOMINIO
 # SITE_URL = "http://aprender-wapiptdah.com"

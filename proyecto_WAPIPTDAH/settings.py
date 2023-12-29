@@ -237,6 +237,7 @@ CORS_ALLOW_HEADERS = [
 
 CORS_ALLOWED_ORIGINS = [
     "https://react-frontend-production-b574.up.railway.app",
+    'serverapi-production-c8a1.up.railway.app'
     # Agrega más dominios permitidos aquí si es necesario
 ]
 # DOMINIO   

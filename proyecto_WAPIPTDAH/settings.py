@@ -211,28 +211,27 @@ EMAIL_USE_SSL = False
 #EMAIL_PORT = 465 # No se especifica el puerto ssl para facilidad de entrega
 
 
-""" CONFIGURACIÓN PARA LOS CORS HEADERS DE ACCESO DEL FRONTEND """
-
-CORS_ALLOW_ALL_ORIGINS = True
+# CONFIGURACIÓN PARA LOS CORS HEADERS DE ACCESO DEL FRONTEND
+CORS_ALLOW_ALL_ORIGINS = False  # Cambiado a False para especificar los dominios permitidos
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_METHODS = [
-'DELETE',
-'GET',
-'OPTIONS',
-'PATCH',
-'POST',
-'PUT',
+    'DELETE',
+    'GET',
+    'OPTIONS',
+    'PATCH',
+    'POST',
+    'PUT',
 ]
 CORS_ALLOW_HEADERS = [
-'accept',
-'accept-encoding',
-'authorization',
-'content-type',
-'dnt',
-'origin',
-'user-agent',
-'x-csrftoken',
-'x-requested-with',
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
 ]
 
 CORS_ALLOWED_ORIGINS = [
@@ -240,5 +239,6 @@ CORS_ALLOWED_ORIGINS = [
     'https://serverapi-production-c8a1.up.railway.app'
     # Agrega más dominios permitidos aquí si es necesario
 ]
-# DOMINIO   
-#SITE_URL = "http://aprender-wapiptdah.com"
+
+# DOMINIO
+# SITE_URL = "http://aprender-wapiptdah.com"

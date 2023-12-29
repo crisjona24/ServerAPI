@@ -108,7 +108,7 @@ DATABASES = {
         'USER': 'postgres',
         'PASSWORD': 'A2egeEafA62f6A5gCc-A1AbgcDC53gCG',
         'HOST': 'roundhouse.proxy.rlwy.net',
-        'PORT': '56655',  # Reemplaza con el puerto correcto si es necesario
+        'PORT': '22307',  # Reemplaza con el puerto correcto si es necesario
     }
 }
 

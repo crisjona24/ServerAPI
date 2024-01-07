@@ -108,6 +108,22 @@ def correo_unico(ob1):
     except User.objects.DoesNotExist:
         return False
 
+## Método para verificar que un correo sea único y que este validado
+def correo_unico_validado(ob1):
+    """Verifica si el correo es único y validado."""
+    try:
+        # Filtramos la entidad de verificación
+        obj_verificacion = Verificacion.objects.filter(correo=ob1, atendido=False).first()
+        # Filtramos el objeto user
+        obj_user = User.objects.filter(email=ob1).first()
+        # Filtramos existencia del objeto de verificacion y el objeto user
+        if obj_verificacion and obj_user:
+            return True
+        return False
+    except Verificacion.DoesNotExist:
+        return False
+    except User.objects.DoesNotExist:
+        return False
 
 ## Validar cédula única
 def cedula_unica(ob1):
@@ -574,25 +590,50 @@ def generar_token_tiempo(ob1, tiempo_Exp=60):
     return token
 
 def generar_token_verificacion(email_, tiempo_Exp=60):
-    # Calcula la fecha y hora de expiración para ser registrada en el objeto de Recuperación
-    expiracion_tiempo = datetime.utcnow() + timedelta(minutes=tiempo_Exp)
-    # Crea una instancia de la entidad Recuperacion
-    verificacion = Verificacion(fecha_creacion=datetime.utcnow(), fecha_limite=expiracion_tiempo, correo= email_)
-    verificacion.save()
-    # Crea un token único
-    token = generar_token_unico()  
-    # Asocia el token único con la instancia de Verificacion
-    verificacion.token = token
-    verificacion.save()  # Actualiza el registro con el token
-    # Crea los datos que se incluirán en el token y seran enviado por medio del correo
-    datos = {
-        'token': token,
-        'exp': expiracion_tiempo
-    }
-    # Genera el token firmado por medio del tipo de algoritmo HS256
-    token = jwt.encode(datos, settings.NEW_SECRET_KEY, algorithm='HS256')
-    # Devolvemos el token
-    return token
+    # Buscar si existe un objeto de verificación con el correo y atendido en falso
+    obj_verificacion_new = Verificacion.objects.filter(correo=email_, atendido=False).first()
+    # si existe operar de una manera
+    if obj_verificacion_new:
+        # Calcula la fecha y hora de expiración para ser registrada en el objeto de Recuperación
+        expiracion_tiempo_new = datetime.utcnow() + timedelta(minutes=tiempo_Exp)
+        # Se usa la instancia de Verificacion existente
+        obj_verificacion_new.fecha_creacion=datetime.utcnow()
+        obj_verificacion_new.fecha_limite=expiracion_tiempo_new
+        obj_verificacion_new.save()
+        # Crea un token único
+        token_new = generar_token_unico()  
+        # Asocia el token único con la instancia de Recuperacion
+        obj_verificacion_new.token = token_new
+        obj_verificacion_new.save()
+        # Crea los datos que se incluirán en el token y seran enviado por medio del correo
+        datos = {
+            'token': token_new,
+            'exp': expiracion_tiempo_new
+        }
+        # Genera el token firmado por medio del tipo de algoritmo HS256
+        token = jwt.encode(datos, settings.NEW_SECRET_KEY, algorithm='HS256')
+        # Devolvemos el token
+        return token
+    else: 
+        # Calcula la fecha y hora de expiración para ser registrada en el objeto de Recuperación
+        expiracion_tiempo = datetime.utcnow() + timedelta(minutes=tiempo_Exp)
+        # Crea una instancia de la entidad Recuperacion
+        verificacion = Verificacion(fecha_creacion=datetime.utcnow(), fecha_limite=expiracion_tiempo, correo= email_)
+        verificacion.save()
+        # Crea un token único
+        token = generar_token_unico()  
+        # Asocia el token único con la instancia de Verificacion
+        verificacion.token = token
+        verificacion.save()  # Actualiza el registro con el token
+        # Crea los datos que se incluirán en el token y seran enviado por medio del correo
+        datos = {
+            'token': token,
+            'exp': expiracion_tiempo
+        }
+        # Genera el token firmado por medio del tipo de algoritmo HS256
+        token = jwt.encode(datos, settings.NEW_SECRET_KEY, algorithm='HS256')
+        # Devolvemos el token
+        return token
 
 ## Metodo que permite la verificación de la validez del token enviado al usuario cuando
 ## requiere cambiar o en su defecto recuperar su cuenta. El token es validado por medio de 
@@ -945,13 +986,75 @@ def verificacion_correo_V(ob1):
     except User.DoesNotExist:
         return False
 
+# Método de verificación de activación
+def verificar_actividad(ob1):
+    # Buscar el objeto USER por medio del correo
+    user_ob = User.objects.get(email=ob1)
+    # Verificar si el usuario existe como tecnico
+    if is_tecnico(user_ob):
+        usuario__ob = Usuario.objects.get(user=user_ob)
+        if usuario__ob.is_activo:
+            return True
+        else:
+            return False
+    # Verificar si el usuario existe como paciente
+    elif is_paciente(user_ob):
+        paciente__ob = Paciente.objects.get(user=user_ob)
+        if paciente__ob.is_activo:
+            return True
+        else:
+            return False
+    # Verificar si el usuario existe como usuario comun
+    elif is_comun(user_ob):
+        comun__ob = UsuarioComun.objects.get(user=user_ob)
+        if comun__ob.is_activo:
+            return True
+        else:
+            return False
+    else:
+        return False
+    
+# Método de verificación de existencia de registro
+def existe_registro_user(ob1):
+    try:
+        if User.objects.filter(email=ob1).exists():
+            return True
+    except User.DoesNotExist:
+        return False
+    return False
 
 
 
+######  METODOS DE REGISTRO DE USUARIO ######
 
-######  METODOs DE REGISTRO DE USUARIO ######
 
-
+@api_view(['POST'])
+def reenvio_correo_verificacion(request):
+    try:
+        if request.method == 'POST':
+            data = json.loads(request.body)
+            email_ = data.get('email_usuario')
+            # Veriicar correo valido
+            if not es_correo_valido(email_):
+                return JsonResponse({'correo': 'Correo invalido o formato no permitido'})
+            # Verificar formato especificado
+            if not validar_formato_email(email_):
+                return JsonResponse({'correo': 'El formato del correo electrónico no es válido. Debe ser @gmail.com o @unl.edu.ec.'})
+            # Validar existencia de registro
+            if not existe_registro_user(email_):
+                return JsonResponse({'error': 'El usuario no existe'})
+            # Verificar si esta activo o no 
+            if verificar_actividad(email_):
+                return JsonResponse({'error': 'El usuario esta con estado activo'})
+            # Verificar confirmacion de cuenta
+            if not validar_correo_verificacion(email_):
+                return JsonResponse({'error': 'El correo es invalido o no existe registro para verificar'})
+            else:
+                return JsonResponse({'success': True})
+        else:
+            return JsonResponse({'error': 'Acción no permitida'})
+    except Exception as e:
+        return JsonResponse({'error': 'Error al reenviar el correo de verificación. Consulte al proovedor.'})
 
 
 @api_view(['POST'])
@@ -967,6 +1070,9 @@ def api_user_register(request):
             celular_ = data.get('celular')
             fecha_ = data.get('fecha_nacimiento')
             cedula_ = data.get('cedula')
+            # Validar que el correo haya sido validado
+            if correo_unico_validado(email_):
+                return JsonResponse({'correo_validado': 'Correo ya registrado por una cuenta, necesita validarla'})
             if not validar_nombres(first_name_, last_name_):
                 return JsonResponse({'error': 'Nombres y apellidos inválidos. Un solo espacio entre los valores..'})
             # Verificar si el usuario ya existe
@@ -1057,6 +1163,9 @@ def api_paciente_register(request):
             contacto_emergencia_ = data.get('contacto_emergencia')
             direccion_ = data.get('direccion')
             cedula_ = data.get('cedula')
+            # Validar que el correo haya sido validado
+            if correo_unico_validado(email_):
+                return JsonResponse({'correo_validado': 'Correo ya registrado por una cuenta, necesita validarla'})
             if not validar_nombres(first_name_, last_name_):
                 return JsonResponse({'error': 'Nombres y apellidos inválidos. Un solo espacio entre los valores..'})
             # Verificar si el usuario ya existe
@@ -1171,6 +1280,9 @@ def api_comun_register(request):
             genero_ = data.get('genero')
             area_ = data.get('area_estudio')
             cedula_ = data.get('cedula')
+            # Validar que el correo haya sido validado
+            if correo_unico_validado(email_):
+                return JsonResponse({'correo_validado': 'Correo ya registrado por una cuenta, necesita validarla'})
             if not validar_nombres(first_name_, last_name_):
                 return JsonResponse({'error': 'Nombres y apellidos inválidos. Un solo espacio entre los valores..'})
             # Verificar si el usuario ya existe

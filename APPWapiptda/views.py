@@ -1527,11 +1527,37 @@ def send_email(peticion__ob, ob1, ob2):
 @authentication_classes([JWTAuthentication])
 @permission_classes([IsAuthenticated])
 def get_contador_peticiones(request):
-    if request.method == 'GET':
-        contador_obj = ContadorPeticiones.objects.get(pk=1)
-        return JsonResponse({'contador': contador_obj.contador})
+    if request.user.is_authenticated:
+        try:
+            # Decodifica el token
+            token = request.headers.get('Authorization').split(" ")[1]
+            user = get_user_from_token_jwt(token)
+            if is_tecnico(user):
+                if request.method == 'GET':
+                    # Validamos existencia del contador
+                    if not existe_contador_PUC():
+                        print(" Aun no existe contador")
+                        # Al no existir contador le enviamos cero
+                        return JsonResponse({'contador': 0})
+                    # Obtenemos el contador al existir uno
+                    contador_obj = ContadorPeticiones.objects.get(pk=1)
+                    return JsonResponse({'contador': contador_obj.contador})
+                else:
+                    return JsonResponse({'error': 'Ups! Algo salió mal'}, status=500)
+            else:
+                return JsonResponse({'error': 'El usuario no esta autenticado'}, status=401)
+        except Exception as e:
+            return JsonResponse({'error': 'Ups! Algo salió mal'}, status=500)
     else:
-        return JsonResponse({'error': 'No hay contador'}, status=405)
+        return JsonResponse({'error': 'El usuario no esta autenticado'}, status=405)
+
+def existe_contador_PUC():
+    try:
+        if ContadorPeticiones.objects.get(pk=1):
+            return True
+        return False
+    except ContadorPeticiones.DoesNotExist:
+        return False
 
 @api_view(['GET'])
 @authentication_classes([JWTAuthentication])
@@ -1551,23 +1577,39 @@ def reset_contador_peticiones(request):
 @authentication_classes([JWTAuthentication])
 @permission_classes([IsAuthenticated])
 def get_contador_peticiones_atendidas(request):
-    try:
-        if request.method == 'GET':
-            # Decodifica el token
-            token = request.headers.get('Authorization').split(" ")[1]
-            user = get_user_from_token_jwt(token)
-            if (is_comun(user)):
-                # Obtenemos el objeto usuario comun
-                usuario__ob = UsuarioComun.objects.get(user=user)
-                # Filtramos el contador del usuariuo comun
-                contador_obj = ContadorPeticionesAtendidas.objects.get(usuario_comun=usuario__ob)
-                return JsonResponse({'contador': contador_obj.contador})
+    if request.user.is_authenticated:
+        try:
+            if request.method == 'GET':
+                # Decodifica el token
+                token = request.headers.get('Authorization').split(" ")[1]
+                user = get_user_from_token_jwt(token)
+                if (is_comun(user)):
+                    # Obtenemos el objeto usuario comun
+                    usuario__ob = UsuarioComun.objects.get(user=user)
+                    # Verificamos existencia del contador
+                    if not existe_contador_PAUC(usuario__ob):
+                        # Al no existir contador le enviamos cero
+                        return JsonResponse({'contador': 0})
+                    # Al existir, filtramos el contador del usuariuo comun
+                    contador_obj = ContadorPeticionesAtendidas.objects.get(usuario_comun=usuario__ob)
+                    return JsonResponse({'contador': contador_obj.contador})
+                else:
+                    return JsonResponse({'error': 'Token no proporcionado'}, status=401)
             else:
-                return JsonResponse({'error': 'Token no proporcionado'}, status=401)
-        else:
-            return JsonResponse({'error': 'Método no permitido'}, status=405) 
-    except Exception as e:
-        return JsonResponse({'error': str(e)}, status=500) 
+                return JsonResponse({'error': 'Método no permitido'}, status=405) 
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500) 
+    else:
+        return JsonResponse({'error': 'El usuario no esta autenticado'}, status=405)
+
+# Verificar existencia de contador de peticiones atendidas
+def existe_contador_PAUC(ob1):
+    try:
+        if ContadorPeticionesAtendidas.objects.get(usuario_comun=ob1):
+            return True
+        return False
+    except ContadorPeticionesAtendidas.DoesNotExist:
+        return False
 
 @api_view(['GET'])
 @authentication_classes([JWTAuthentication])

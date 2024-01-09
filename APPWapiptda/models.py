@@ -12,9 +12,6 @@ y en vias del desarrollo del presente PIC. Cristobal Rios
 
 '''
 
-# Correo
-from django.utils.crypto import get_random_string
-
 # MODELO DE RECUPERACION DE CLAVE
 class Recuperacion(models.Model):
     usuario = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -76,12 +73,6 @@ class Usuario(models.Model):
         self.slug_usuario = slugify(
             self.nombre_usuario + "-" + self.apellido_usuario)
         super(Usuario, self).save(*args, **kwargs)
-
-    # Correo
-    def generate_confirmation_token(self):
-        self.confirmation_token = get_random_string(length=40)
-        self.save()
-    # Correo
 
     @property
     def edad(self):
@@ -197,7 +188,7 @@ class Dominio(models.Model):
     fecha_registro_dominio = models.DateField(auto_now_add=False, blank=True, null=True)
     fecha_edicion_dominio = models.DateField(auto_now=True)
     estado_dominio = models.BooleanField(default=True)
-    slug_dominio = models.SlugField(unique=True, blank=True)
+    slug_dominio = models.SlugField(max_length=250, unique=True, blank=True)
     portada_dominio = models.ImageField( upload_to='samples/fondo_dominio_react/', storage=MediaCloudinaryStorage(), null=True, blank=True)
     # Llave foranea
     usuario = models.ForeignKey(Usuario, on_delete=models.SET_NULL, blank=True, null=True)
@@ -320,7 +311,7 @@ class Curso(models.Model):
     fecha_registro_curso = models.DateField(auto_now_add=False, blank=True, null=True)
     fecha_edicion_curso = models.DateField(auto_now=True)
     estado_curso = models.BooleanField(default=True)
-    slug_curso = models.SlugField(unique=True, blank=True, max_length=70)
+    slug_curso = models.SlugField(max_length=250, unique=True, blank=True)
     # Foranea
     usuario_comun = models.ForeignKey(UsuarioComun, on_delete=models.CASCADE, blank=True, null=True)
 
@@ -351,7 +342,7 @@ class Peticion(models.Model):
     estado_revision= models.BooleanField(default=False)
     fecha_registro_peticion = models.DateField(auto_now_add=False, blank=True, null=True)
     fecha_edicion_peticion = models.DateField(auto_now=True)
-    slug_peticion = models.SlugField(unique=True, blank=True)
+    slug_peticion = models.SlugField(unique=True, blank=True, null=True)
     # Foraneas
     usuario_comun = models.ForeignKey(UsuarioComun, on_delete=models.CASCADE, blank=True, null=True)
 
@@ -377,13 +368,13 @@ class DetallePeticion(models.Model):
 #MODELO DE SALA
 class Sala(models.Model):
     nombre_sala = models.CharField(max_length=80, blank=False, null=True)
-    anotaciones = models.TextField()
+    anotaciones = models.TextField(blank=True)
     codigo_identificador = models.CharField(max_length=80, blank=False, null=True)
     fecha_registro_sala = models.DateField(auto_now_add=False, blank=True, null=True)
     fecha_edicion_sala = models.DateField(auto_now=True)
     estado_sala = models.BooleanField(default=True)
     sala_atendida = models.BooleanField(default=False)
-    slug_sala = models.SlugField(unique=True, blank=True)
+    slug_sala = models.SlugField(unique=True, blank=True, null=True)
     # Foraneas
     paciente = models.ForeignKey(Paciente, on_delete=models.SET_NULL, blank=True, null=True)
 
@@ -409,7 +400,7 @@ class DetalleSala(models.Model):
 class Reporte(models.Model):
     titulo_reporte = models.CharField(max_length=200, blank=False, null=True)
     descripcion_reporte = models.TextField(blank=False, null=True)
-    slug_reporte = models.SlugField(unique=False, blank=False, null=True)
+    slug_reporte = models.SlugField(unique=False, blank=False, null=True, max_length=250)
     fecha_registro_reporte = models.DateField(auto_now_add=False, blank=True, null=True)
     fecha_edicion_reporte = models.DateField(auto_now=True)
     estado_reporte = models.BooleanField(default=True)

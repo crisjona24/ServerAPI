@@ -183,7 +183,7 @@ class GradoTDAH(models.Model):
 # MODELO DOMINIO
 class Dominio(models.Model):
     nombre = models.CharField(max_length=80, blank=False, null=True)
-    descripcion = models.TextField(max_length=250, blank=False, null=True)
+    descripcion = models.TextField(blank=False, null=True)
     identificador_dominio = models.IntegerField(unique=True, blank=False, null=True)
     fecha_registro_dominio = models.DateField(auto_now_add=False, blank=True, null=True)
     fecha_edicion_dominio = models.DateField(auto_now=True)
@@ -235,7 +235,7 @@ class Contenido(models.Model):
 
 # MODELO DE CONTENIDO INDIVIDUAL
 class ContenidoIndividual(models.Model):
-    descripcion_individual = models.TextField( max_length=250, blank=False, null=True)
+    descripcion_individual = models.TextField(blank=False, null=True)
     identificador_individual = models.IntegerField(unique=True, blank=False, null=True)
     fecha_registro_individual = models.DateField(auto_now_add=False, blank=True, null=True)
     fecha_edicion_individual = models.DateField(auto_now=True)
@@ -306,7 +306,7 @@ class Resultado(models.Model):
 # MODELO DE CURSO
 class Curso(models.Model):
     nombre_curso = models.CharField(max_length=100, blank=False, null=True)
-    descripcion_curso = models.TextField(max_length=250, blank=False, null=True)
+    descripcion_curso = models.TextField(blank=False, null=True)
     identificador_curso = models.IntegerField(unique=True, blank=False, null=True)
     fecha_registro_curso = models.DateField(auto_now_add=False, blank=True, null=True)
     fecha_edicion_curso = models.DateField(auto_now=True)
@@ -337,7 +337,7 @@ class DetalleInscripcionCurso(models.Model):
 class Peticion(models.Model):
     motivo_peticion = models.CharField(max_length=250, blank=False, null=True)
     tipo_peticion = models.CharField(max_length=80, blank=False, null=True)
-    peticion_cuerpo = models.TextField(max_length=250, blank=False, null=True)
+    peticion_cuerpo = models.TextField(blank=False, null=True)
     estado_peticion = models.BooleanField(default=True)
     estado_revision= models.BooleanField(default=False)
     fecha_registro_peticion = models.DateField(auto_now_add=False, blank=True, null=True)
@@ -368,7 +368,7 @@ class DetallePeticion(models.Model):
 #MODELO DE SALA
 class Sala(models.Model):
     nombre_sala = models.CharField(max_length=80, blank=False, null=True)
-    anotaciones = models.TextField(blank=True)
+    anotaciones = models.TextField(blank=True, null=True)
     codigo_identificador = models.CharField(max_length=80, blank=False, null=True)
     fecha_registro_sala = models.DateField(auto_now_add=False, blank=True, null=True)
     fecha_edicion_sala = models.DateField(auto_now=True)

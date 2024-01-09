@@ -1345,27 +1345,26 @@ class BusquedaPacienteCursoListView(generics.ListAPIView):
         nombres_completos = self.kwargs['nombre']
         # Dividir los nombres y apellidos en una lista
         nombres_apellidos = nombres_completos.split()
-        # Controlar que nombres_apellidos tenga 4 elementos
-        if len(nombres_apellidos) != 4:
+        # Controlar que nombres_apellidos tenga 4 o 5 elementos
+        if len(nombres_apellidos) not in [4, 5]:
             return []
-        # Obtener el nombre y apellido
-        if len(nombres_apellidos) == 4:
-            nombre = ' '.join(nombres_apellidos[:2])
-            apellido = ' '.join(nombres_apellidos[2:])
-            # Controlar valides de entrada
-            if not validar_nombres(nombre, apellido):
-                return []
-            # Validar existencia de cedula
-            if not Obtener_Cedula(nombre, apellido):
-                return []
-            cedula_paciente = Obtener_Cedula(nombre, apellido)
-            # Filtramos la existencia del estudiante basados en la cédula
-            if not Paciente_Existe_Cedula(cedula_paciente):
-                return []
-            # Filtramos
-            registro_estudiante = Estudiante_por_Cedula(self.request, cedula_paciente, slug_)
-            return registro_estudiante
-        return []
+        # Obtener nombres y apellidos
+        nombre = ' '.join(nombres_apellidos[:3] if len(nombres_apellidos) == 5 else nombres_apellidos[:2])
+        apellido = ' '.join(nombres_apellidos[3:] if len(nombres_apellidos) == 5 else nombres_apellidos[2:])
+        # Controlar valides de entrada
+        if not validar_nombres(nombre, apellido):
+            return []
+        # Validar existencia de cedula
+        if not Obtener_Cedula(nombre, apellido):
+            return []
+        # Obtener cédula
+        cedula_paciente = Obtener_Cedula(nombre, apellido)
+        # Filtramos la existencia del estudiante basados en la cédula
+        if not Paciente_Existe_Cedula(cedula_paciente):
+            return []
+        # Filtramos
+        registro_estudiante = Estudiante_por_Cedula(self.request, cedula_paciente, slug_)
+        return registro_estudiante
         
 def paciente_exist_curso(ob1, ob2, ob3):
     # Verifica si el nombre del paciente ya existe en un curso

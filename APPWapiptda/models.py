@@ -1,7 +1,8 @@
 from django.contrib.auth.models import User
 from django.db import models
 from django.utils.text import slugify
-from cloudinary_storage.storage import MediaCloudinaryStorage, RawMediaCloudinaryStorage
+from cloudinary_storage.storage import MediaCloudinaryStorage
+#RawMediaCloudinaryStorage
 from datetime import date, datetime, timedelta
 import pytz
 
@@ -194,7 +195,8 @@ class Dominio(models.Model):
     usuario = models.ForeignKey(Usuario, on_delete=models.SET_NULL, blank=True, null=True)
 
     def save(self, *args, **kwargs):
-        self.slug_dominio = slugify(self.nombre + "-" + self.descripcion)
+        ident_domi= str(self.identificador_dominio)
+        self.slug_dominio = slugify(self.nombre + "-" + ident_domi)
         super(Dominio, self).save(*args, **kwargs)
 
     def get_portada_url(self):
@@ -218,7 +220,7 @@ class Contenido(models.Model):
     portada = models.ImageField(upload_to='samples/prueba/', storage=MediaCloudinaryStorage(), null=True, blank=True)
 
     # Foranea
-    dominio = models.ForeignKey(Dominio, on_delete=models.SET_NULL, blank=True, null=True)
+    dominio = models.ForeignKey(Dominio, on_delete=models.CASCADE, blank=True, null=True)
 
     def save(self, *args, **kwargs):
         self.slug_contenido = slugify(self.nombre + "-" + self.dominio_tipo)
@@ -316,7 +318,8 @@ class Curso(models.Model):
     usuario_comun = models.ForeignKey(UsuarioComun, on_delete=models.CASCADE, blank=True, null=True)
 
     def save(self, *args, **kwargs):
-        self.slug_curso = slugify(self.nombre_curso + "-" + self.descripcion_curso)
+        ident_curso = str(self.identificador_curso)
+        self.slug_curso = slugify(self.nombre_curso + "-" + ident_curso)
         super(Curso, self).save(*args, **kwargs)
 
     def __str__(self):
@@ -376,7 +379,7 @@ class Sala(models.Model):
     sala_atendida = models.BooleanField(default=False)
     slug_sala = models.SlugField(unique=True, blank=True, null=True)
     # Foraneas
-    paciente = models.ForeignKey(Paciente, on_delete=models.SET_NULL, blank=True, null=True)
+    paciente = models.ForeignKey(Paciente, on_delete=models.CASCADE, blank=True, null=True)
 
     def save(self, *args, **kwargs):
         self.slug_sala = slugify(self.nombre_sala)
@@ -391,7 +394,7 @@ class DetalleSala(models.Model):
     estado_detalle_sala = models.BooleanField(default=True)
     # Foraneas
     sala = models.ForeignKey(Sala, on_delete=models.CASCADE, blank=True, null=True)
-    usuario_comun = models.ForeignKey(UsuarioComun, on_delete=models.SET_NULL, blank=True, null=True)
+    usuario_comun = models.ForeignKey(UsuarioComun, on_delete=models.CASCADE, blank=True, null=True)
 
     def __str__(self):
         return f"Fecha : {self.fecha_detalle_sala} | Estado : {self.estado_detalle_sala}"
@@ -400,16 +403,16 @@ class DetalleSala(models.Model):
 class Reporte(models.Model):
     titulo_reporte = models.CharField(max_length=200, blank=False, null=True)
     descripcion_reporte = models.TextField(blank=False, null=True)
-    slug_reporte = models.SlugField(unique=False, blank=False, null=True, max_length=250)
     fecha_registro_reporte = models.DateField(auto_now_add=False, blank=True, null=True)
     fecha_edicion_reporte = models.DateField(auto_now=True)
     estado_reporte = models.BooleanField(default=True)
+    slug_reporte = models.SlugField(unique=False, blank=False, null=True, max_length=250)
     # Foraneas
-    usuario_comun = models.ForeignKey(UsuarioComun, on_delete=models.SET_NULL, related_name='reportes', blank=True, null=True)
-    resultado = models.ForeignKey(Resultado, on_delete=models.SET_NULL, related_name='reportes_resultado', blank=True, null=True)
+    usuario_comun = models.ForeignKey(UsuarioComun, on_delete=models.CASCADE, related_name='reportes', blank=True, null=True)
+    resultado = models.ForeignKey(Resultado, on_delete=models.CASCADE, related_name='reportes_resultado', blank=True, null=True)
 
     def save(self, *args, **kwargs):
-        self.slug_reporte = slugify(self.titulo_reporte + '-' + self.descripcion_reporte)
+        self.slug_reporte = slugify(self.titulo_reporte + "-" + "New-Report")
         super(Reporte, self).save(*args, **kwargs)
 
     def __str__(self):

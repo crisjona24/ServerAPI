@@ -197,8 +197,11 @@ def verificar_cedula_ecuatoriana(cedula):
 def validar_nombres(ob1, ob2):
     # Expresión regular para verificar que ambos nombres cumplan con el formato deseado
     formato_valido = re.compile(r'^[A-Za-zÁáÉéÍíÓóÚúÑñ]+\s[A-Za-zÁáÉéÍíÓóÚúÑñ]+$')
-
+    # Para tres valores
+    formato_valido2 = re.compile(r'^[A-Za-zÁáÉéÍíÓóÚúÑñ]+\s[A-Za-zÁáÉéÍíÓóÚúÑñ]+\s[A-Za-zÁáÉéÍíÓóÚúÑñ]+$')
     if formato_valido.match(ob1) and formato_valido.match(ob2):
+        return True
+    elif formato_valido2.match(ob1) and formato_valido.match(ob2):
         return True
     else:
         return False

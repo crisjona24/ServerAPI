@@ -1092,7 +1092,10 @@ def api_user_register(request):
                 return JsonResponse({'correo': 'El formato del correo electrónico no es válido. Debe ser @gmail.com o @unl.edu.ec.'})
             # Validar correo único
             if not correo_unico(email_):
-                return JsonResponse({'correo': 'Correo ya registrado'})
+                return JsonResponse({'correo': 'Correo ya registrado por una cuenta'})
+            # Corroborar celular único
+            if not celular_unico_TT(celular_):
+                return JsonResponse({'celular': 'Celular ya registrado'})
             # Verificar clave
             if not validar_clave(password_):
                 return JsonResponse({'clave': 'Clave sin requisitos mínimos'})
@@ -1124,7 +1127,7 @@ def api_user_register(request):
         else:
             return JsonResponse({'error': 'Método no permitido'})
     except Exception as e:
-        return JsonResponse({'error': ('Error al crear el usuario'+e)})
+        return JsonResponse({'error': 'Error al crear el usuario'})
 
 # Método para guardar el registro de entidad usuario
 def crear_usuario_normal(ob1, ob2, ob3, ob4, ob5, ob6, ob7, ob8):
@@ -1191,6 +1194,11 @@ def api_paciente_register(request):
             if not cumplir_edad_limite(fecha_):
                 return JsonResponse({'correo': 'No cumple con la edad establecida para registrarse'})
             print("Valide edad")
+            # Corroborar celular único
+            if not celular_unico_P(celular_, contacto_emergencia_):
+                return JsonResponse({'celular': 'Celular ya registrado'})
+            if not ccemerg_unico_P(celular_, contacto_emergencia_):
+                return JsonResponse({'celular': 'Contacto de emergencia ya registrado'})
             # Verificar clave
             if not validar_clave(password_):
                 return JsonResponse({'clave': 'Clave sin requisitos mínimos'})
@@ -1262,7 +1270,47 @@ def cumplir_edad_limite(ob1):
         print("Error:", e)
         return False
 
+# Método para verificar que el celular y contacto_emergencia sea único y no iguales entre si
+# en los registros de Paciente
+def celular_unico_P(ob1, ob2):
+    try:
+        if Paciente.objects.filter(celular=ob1).exists():
+            return False
+        elif Paciente.objects.filter(celular=ob2).exists():
+            return False
+        else:
+            return True
+    except Paciente.DoesNotExist:
+        return False
+    
+def ccemerg_unico_P(ob1, ob2):
+    try:
+        if Paciente.objects.filter(contacto_emergencia=ob1).exists():
+            return False
+        elif Paciente.objects.filter(contacto_emergencia=ob2).exists():
+            return False
+        else:
+            return True
+    except Paciente.DoesNotExist:
+        return False
 
+def celular_unico_CC(ob1):
+    try:
+        if UsuarioComun.objects.filter(celular=ob1).exists():
+            return False
+        else:
+            return True
+    except UsuarioComun.DoesNotExist:
+        return False
+
+def celular_unico_TT(ob1):
+    try:
+        if Usuario.objects.filter(celular=ob1).exists():
+            return False
+        else:
+            return True
+    except Usuario.DoesNotExist:
+        return False
 
 # METODO DE REGISTRO DE USUARIO COMUN
 @api_view(['POST'])
@@ -1303,6 +1351,9 @@ def api_comun_register(request):
             # Validar correo único
             if not correo_unico(email_):
                 return JsonResponse({'correo': 'Correo ya registrado'})
+            # Corroborar celular único
+            if not celular_unico_CC(celular_):
+                return JsonResponse({'celular': 'Celular ya registrado'})
             # Verificar clave
             if not validar_clave(password_):
                 return JsonResponse({'clave': 'Clave sin requisitos mínimos'})
